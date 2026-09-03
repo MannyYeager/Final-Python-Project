@@ -105,12 +105,12 @@ class Wallet:
     def check_balance(self):
         if self.balance <= 0:
             return "Your account balance is GH₵ 0.0"
-        
-        return(
-            f"--------------------Account Balance--------------------"
+
+        return (
+            "----------------------Account Balance----------------------"
             f"\nGH₵ balance: ₵{round(self.balance, 2)}"
-            f"\nUSD balance: ${round(self.balance / rs.USD, 2)}" 
-            f"\nGBP balance: £{round(self.balance, 2)}" 
-            f"\nEURO balance: €{round(self.balance, 2)}" 
-            f"\nCFA balance: {round(self.balance, 2)}" 
-        )  
+            f"\nUSD balance: ${round(self.balance / rs.USD, 2)}"
+            f"\nGBP balance: £{round(self.balance / rs.GBP, 2)}"
+            f"\nEURO balance: €{round(self.balance / rs.EURO, 2)}"
+            f"\nCFA balance: {round(self.balance / rs.CFA, 2)}"
+        )
