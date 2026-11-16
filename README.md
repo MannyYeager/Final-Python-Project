@@ -1,10 +1,26 @@
 # E-Wallet Converter
 
-A Python terminal project that simulates deposits and withdrawals in five currencies, using a Ghana cedi (GHS) balance. It demonstrates classes, currency conversion, validated user input, and decimal arithmetic.
+A Python e-wallet simulation with a working web dashboard and the original terminal interface. Deposit or withdraw in five currencies, inspect equivalent balances, and follow each transaction in a session activity list. The web interface uses the existing `Wallet` class and its decimal arithmetic.
 
 **This is a simulation.** The rates are fixed teaching examples, not current exchange rates. No money moves, no financial account is created, and the balance disappears when the program exits.
 
-## Run
+## Open the web app
+
+Requires **Python 3.11 or newer** and only the standard library.
+
+```sh
+git clone https://github.com/MannyYeager/Final-Python-Project.git
+cd Final-Python-Project
+python web.py
+```
+
+Open **http://127.0.0.1:8766/**. Use `--port 8771` if that port is occupied. No frontend build, packages, or API keys are needed.
+
+Try **10 USD** as a deposit: the balance becomes **GHS 114.80**. Switch to **Withdraw**, choose **GHS**, and enter **25**: the balance becomes **GHS 89.80**. An oversized withdrawal shows an error without changing the balance or activity list. The full-withdrawal option pays out the selected currency's rounded equivalent and clears the simulated balance.
+
+Each browser cookie session has an independent wallet and activity list. Refreshes retain that session; it expires after eight hours, and all data is discarded when the server stops. The interface calls the Python backend for every transaction. The on-screen pre-submit quote is approximate; the server's Decimal result determines the balance. The server binds only to `127.0.0.1`.
+
+## Run the original terminal app
 
 Requires **Python 3.11 or newer** and only the standard library.
 
@@ -64,7 +80,7 @@ Balances use `Decimal`. Each converted transaction is rounded to two GHS decimal
 python -m unittest -v
 ```
 
-Regression tests cover all five currencies, partial GHS withdrawals, invalid-currency full withdrawals, insufficient funds, nonnumeric/NaN/infinite input, rounding, and recovery after invalid terminal input.
+Regression tests cover all five currencies, partial GHS withdrawals, invalid-currency full withdrawals, insufficient funds, nonnumeric/NaN/infinite input, rounding, recovery after invalid terminal input, HTTP transactions, per-browser isolation, activity records, and request boundaries.
 
 | File | Responsibility |
 | --- | --- |
@@ -72,5 +88,8 @@ Regression tests cover all five currencies, partial GHS withdrawals, invalid-cur
 | `wallet.py` | Balance and transaction rules |
 | `rates.py` | Fixed teaching rates |
 | `test_wallet.py` | Unit tests and a terminal walkthrough |
+| `web.py`, `local_web.py` | Session wallet API and loopback HTTP server |
+| `static/` | HTML/CSS/JavaScript dashboard, forms, and activity view |
+| `test_web.py` | HTTP regression tests |
 
-This project has no persistence, fees, live-rate API, transaction ledger, or payment-service integration.
+This project has no durable storage, fees, live-rate API, or payment-service integration. The web activity list is an educational session history, not an audited financial ledger. Stop the web server with Ctrl+C.
