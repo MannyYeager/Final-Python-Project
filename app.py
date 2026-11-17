@@ -1,174 +1,58 @@
+"""Terminal interface for the educational e-wallet converter."""
 import os
 from wallet import Wallet
 
+CURRENCIES = ("GHS", "USD", "GBP", "EURO", "CFA")
+
+
 def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    if os.isatty(1):
+        os.system("cls" if os.name == "nt" else "clear")
 
-print('-------------------------E-Wallet Converter-------------------------')
 
-user = input("Enter your name: ")
+def main():
+    print("--- E-Wallet Converter ---")
+    print("SIMULATION: fixed example rates; no real money or payment services.")
+    user = input("Enter your name: ").strip() or "Guest"
+    wallet = Wallet(user)
+    while True:
+        clear()
+        print(f"\nWelcome {wallet.user} | Simulated balance: GHS {wallet.balance:.2f}")
+        print("Fixed example rates | Session data is discarded on exit.")
+        for number, currency in enumerate(CURRENCIES, 1):
+            print(f"{number}. Deposit {currency}")
+        for number, currency in enumerate(CURRENCIES, 6):
+            print(f"{number}. Withdraw {currency}")
+        print("11. Check balance (all currencies)\n12. Exit")
+        choice = input("Enter choice (1-12): ").strip()
+        if choice == "12":
+            print("Thank you. Simulation ended.")
+            return
+        if choice == "11":
+            print(wallet.check_balance())
+        elif choice in {str(i) for i in range(1, 11)}:
+            option = int(choice)
+            currency = CURRENCIES[(option - 1) % 5]
+            if option <= 5:
+                amount = input(f"Enter amount in {currency}: ").strip()
+                print(wallet.deposit(amount, currency))
+            else:
+                print("1. Withdraw all\n2. Withdraw a specific amount")
+                mode = input("Choose either 1 or 2: ").strip()
+                if mode == "1":
+                    print(wallet.withdraw_all(currency))
+                elif mode == "2":
+                    amount = input(f"Enter amount in {currency}: ").strip()
+                    print(wallet.withdrawal(amount, currency))
+                else:
+                    print("Invalid withdrawal option. Choose 1 or 2.")
+        else:
+            print("Invalid option. Choose a number from 1 to 12.")
+        input("Press Enter to continue...")
 
-wallet = Wallet(user)
 
-clear()
-print(f"Welcome {user}")
-input("Please press enter to continue..........") 
-
-while True:
-    clear()
-    print("\nChoose an option")
-    print("1. Deposit GH₵.")
-    print("2. Deposit USD.")
-    print("3. Deposit GBP.")
-    print("4. Deposit EURO.")
-    print("5. Deposit CFA.")
-    print("6. Withdraw GH₵.")
-    print("7. Withdraw USD.")
-    print("8. Withdraw GBP.")
-    print("9. Withdraw EURO.")
-    print("10. Withdraw CFA.")
-    print("11. Check available balance(All currencies).")
-    print("12. Exit.")
-    
-    choice = input("Enter choice (1-12): ")
-    
-    if choice == '1':
-        clear()
-        amount = float(input("Enter amount in GH₵: "))  
-        clear()
-        print(wallet.deposit(amount, "GH₵"))
-        input("Please press enter to continue..........")
-        
-    elif choice == '2':
-        clear()
-        amount = float(input("Enter amount in USD: "))
-        clear()
-        print(wallet.deposit(amount, "USD"))
-        input("Please press enter to continue..........") 
-        
-    elif choice == '3':
-        clear()
-        amount = float(input("Enter amount in GBP: "))
-        clear()
-        print(wallet.deposit(amount, "GBP"))
-        input("Please press enter to continue..........") 
-        
-    elif choice == '4':
-        clear()
-        amount = float(input("Enter amount in EURO: "))
-        clear()
-        print(wallet.deposit(amount, "EURO"))
-        input("Please press enter to continue..........") 
-        
-    elif choice == '5':
-        clear()
-        amount = float(input("Enter amount in CFA: "))
-        clear()
-        print(wallet.deposit(amount, "CFA"))
-        input("Please press enter to continue..........") 
-        
-    elif choice == '6': 
-        clear()
-        print("1. Withdraw all")
-        print("2. Withdraw a specific amount")
-        sub_choice = input("Choose either 1 or 2: ")
-        
-        if sub_choice == '1':
-            result = wallet.withdraw_all("GH₵")
-            clear()
-            print(result)
-            input("Please press enter to continue..........")
-        
-        if sub_choice == '2':
-            clear()
-            amount = float(input("Enter amount in GH₵: "))
-            print(wallet.withdrawal(amount, "GH₵"))
-            input("Please press enter to continue..........")
-        
-    elif choice == '7':
-        clear()
-        print("1. Withdraw all")
-        print("2. Withdraw a specific amount")
-        sub_choice = input("Choose either 1 or 2: ")
-        
-        if sub_choice == '1':
-            result = wallet.withdraw_all("USD")
-            clear()
-            print(result)
-            input("Please press enter to continue..........")
-        
-        if sub_choice == '2':
-            clear()
-            amount = float(input("Enter amount in USD: "))
-            print(wallet.withdrawal(amount, "USD"))
-            input("Please press enter to continue..........")
-        
-    elif choice == '8':
-        clear()
-        print("1. Withdraw all")
-        print("2. Withdraw a specific amount")
-        sub_choice = input("Choose either 1 or 2: ")
-        
-        if sub_choice == '1':
-            result = wallet.withdraw_all("GBP")
-            clear()
-            print(result)
-            input("Please press enter to continue..........")
-        
-        if sub_choice == '2':
-            clear()
-            amount = float(input("Enter amount in GBP: "))
-            print(wallet.withdrawal(amount, "GBP"))
-            input("Please press enter to continue..........") 
-        
-    elif choice == '9': 
-        clear()
-        print("1. Withdraw all")
-        print("2. Withdraw a specific amount")
-        sub_choice = input("Choose either 1 or 2: ")
-        
-        if sub_choice == '1':
-            result = wallet.withdraw_all("EURO")
-            clear()
-            print(result)
-            input("Please press enter to continue..........")
-        
-        if sub_choice == '2':
-            clear()
-            amount = float(input("Enter amount in EURO: "))
-            print(wallet.withdrawal(amount, "EURO"))
-            input("Please press enter to continue..........")
-        
-    elif choice == '10':
-        clear()
-        print("1. Withdraw all")
-        print("2. Withdraw a specific amount")
-        sub_choice = input("Choose either 1 or 2: ")
-        
-        if sub_choice == '1':
-            result = wallet.withdraw_all("CFA")
-            clear()
-            print(result)
-            input("Please press enter to continue..........")
-        
-        if sub_choice == '2':
-            clear()
-            amount = float(input("Enter amount in CFA: "))
-            print(wallet.withdrawal(amount, "CFA"))
-            input("Please press enter to continue..........")  
-    
-    elif choice == '11':
-        result =wallet.check_balance()
-        clear()
-        print(result)
-        input("Please press enter to continue..........")
-        
-    elif choice == '12':
-        print("Thank you.")
-        break
-    
-    else:
-        clear()
-        print("Invalid Option, Try again.")   
-        input("Please press enter to continue..........")          
-        continue               
+if __name__ == "__main__":
+    try:
+        main()
+    except (EOFError, KeyboardInterrupt):
+        print("\nSimulation ended.")
