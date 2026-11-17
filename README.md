@@ -93,3 +93,10 @@ Regression tests cover all five currencies, partial GHS withdrawals, invalid-cur
 | `test_web.py` | HTTP regression tests |
 
 This project has no durable storage, fees, live-rate API, or payment-service integration. The web activity list is an educational session history, not an audited financial ledger. Stop the web server with Ctrl+C.
+
+### Visual design and animation
+
+The browser app includes a distinct colour palette, custom stroke SVG icons, richer dashboards, and Anime.js entrances and action feedback. Animation respects `prefers-reduced-motion`, including changes while the page is open. Forms and data updates do not depend on animation completing.
+
+Anime.js **4.5.0** is vendored at `static/vendor/anime.umd.min.js` from the official npm distribution, with its MIT license in `static/vendor/ANIME-LICENSE.md`. No CDN, build step, or internet connection is needed at runtime. `static/ui.js` and `static/ui.css` provide the shared icon and motion layer; `static/theme.css` contains this app’s visual theme. See [Anime.js installation](https://animejs.com/documentation/getting-started/installation/).
+`node test_motion.cjs` checks the motion preference and missing-runtime fallbacks (Node.js is needed only for this optional check).

@@ -72,6 +72,11 @@ class WalletWebTests(unittest.TestCase):
 
     def test_static_assets_and_request_boundaries(self):
         self.assertIn('Five possibilities', self.request('/')[2])
+        for path in ['/app.js', '/ui.js', '/ui.css', '/theme.css', '/vendor/anime.umd.min.js']:
+            status, headers, body = self.request(path)
+            self.assertEqual(status, 200)
+            self.assertGreater(len(body), 100)
+            self.assertIn("script-src 'self'", headers['Content-Security-Policy'])
         self.assertEqual(self.request('/api/transaction', {}, origin=False)[0], 403)
         self.assertEqual(self.request(host='untrusted.example')[0], 403)
         self.assertEqual(self.request('/../wallet.py')[0], 404)

@@ -1,5 +1,6 @@
 const $ = selector => document.querySelector(selector);
 const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+let firstRender = true;
 let state, mode = 'deposit', busy = false, timer;
 const symbols = {USD:'$',GBP:'£',EURO:'€',CFA:'F'};
 const names = {USD:'US Dollar',GBP:'British Pound',EURO:'Euro',CFA:'CFA Franc'};
@@ -15,7 +16,7 @@ async function api(path,data) {
 }
 
 function toast(message) {
-  clearTimeout(timer); $('#toast').textContent = message; $('#toast').hidden = false;
+  clearTimeout(timer); $('#toast').textContent = message; $('#toast').hidden = false; AppUI.feedback('#toast');
   timer = setTimeout(() => { $('#toast').hidden = true; },6500);
 }
 
@@ -35,6 +36,10 @@ function render() {
     $('#activity-content').innerHTML = `<div class="table-scroll"><table><thead><tr><th>Transaction</th><th>Original amount</th><th>GHS change</th><th>Balance after</th></tr></thead><tbody>${state.history.map(item => `<tr><td><span class="activity-icon ${item.kind === 'deposit' ? 'in' : 'out'}">${item.kind === 'deposit' ? '↓' : '↗'}</span><span><strong>${item.kind === 'deposit' ? 'Deposit' : item.kind === 'withdraw_all' ? 'Full withdrawal' : 'Withdrawal'}</strong><small>${escapeHtml(item.time)}</small></span></td><td>${escapeHtml(item.currency)} ${number(item.amount)}</td><td class="${item.kind === 'deposit' ? 'positive' : ''}">${item.kind === 'deposit' ? '+' : '−'} ${number(item.ghs)}</td><td>GH₵ ${number(item.balance)}</td></tr>`).join('')}</tbody></table></div>`;
   }
   quote();
+  $('#deposit-total').textContent = `GH₵ ${number(state.history.filter(item => item.kind === 'deposit').reduce((sum,item) => sum + Number(item.ghs),0))}`;
+  $('#withdrawal-total').textContent = `GH₵ ${number(state.history.filter(item => item.kind !== 'deposit').reduce((sum,item) => sum + Number(item.ghs),0))}`;
+  $('#transaction-total').textContent = state.history.length;
+  if (firstRender) { AppUI.reveal('.currency-card'); firstRender = false; }
 }
 
 function setMode(next) {
@@ -49,7 +54,7 @@ async function transact(payload) {
   if (busy) return;
   busy = true; $('#submit-transaction').disabled = true; $('#form-error').textContent = '';
   try {
-    const result = await api('/api/transaction',payload); state = result.state; render(); $('#amount').value = ''; quote(); toast(result.message);
+    const result = await api('/api/transaction',payload); state = result.state; render(); $('#amount').value = ''; quote(); AppUI.feedback('.balance-card'); AppUI.reveal('#activity-content tr'); toast(result.message);
   } catch (error) { $('#form-error').textContent = error.message; }
   finally { busy = false; $('#submit-transaction').disabled = false; }
 }
