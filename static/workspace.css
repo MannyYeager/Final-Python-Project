@@ -42,3 +42,98 @@
 #overview>.stat-row .metric:nth-child(1){background:#e7edff;border-color:#cbd6fa}#overview>.stat-row .metric:nth-child(2){background:#ffeadf;border-color:#efd0be}#overview>.stat-row .metric:nth-child(3){background:#eef7d8;border-color:#d5e6b3}
 
 .sidebar nav,.rail nav{scrollbar-width:thin;scrollbar-color:#ffffff45 transparent}.sidebar nav::-webkit-scrollbar,.rail nav::-webkit-scrollbar{height:4px}.sidebar nav::-webkit-scrollbar-track,.rail nav::-webkit-scrollbar-track{background:transparent}.sidebar nav::-webkit-scrollbar-thumb,.rail nav::-webkit-scrollbar-thumb{background:#ffffff45;border-radius:8px}
+
+/* Activity filters: one tactile control, three clearly distinct money moves. */
+.activity-filters {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 420px;
+  max-width: 100%;
+  padding: 5px;
+  border: 1px solid #dbe3f3;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #eaf0fc, #f4f7ff);
+  box-shadow: inset 0 1px 2px #21386508, 0 3px 10px #273d6e05;
+}
+.activity-filters .filter-indicator {
+  position: absolute;
+  z-index: -1;
+  top: 5px;
+  bottom: 5px;
+  left: 5px;
+  width: calc((100% - 10px) / 3);
+  border: 1px solid #283d68;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #253859, #14213c);
+  box-shadow: 0 3px 8px #14213c28, inset 0 1px 0 #ffffff17;
+  transition: transform .24s cubic-bezier(.22,.7,.22,1);
+}
+.activity-filters[data-selected="deposit"] .filter-indicator { transform: translateX(100%); }
+.activity-filters[data-selected="withdraw"] .filter-indicator { transform: translateX(200%); }
+.activity-filters button {
+  appearance: none;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 43px;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #6a7894;
+  font: 600 12px/1.4 var(--sans);
+  cursor: pointer;
+  transition: color .18s;
+}
+.activity-filters button:not(.active):hover { color: #263f79; background: #ffffff77; }
+.activity-filters button.active { color: #fff; }
+.activity-filters .filter-icon { display: flex; color: #7d91b7; }
+.activity-filters [data-kind="deposit"] .filter-icon { color: #389b7d; }
+.activity-filters [data-kind="withdraw"] .filter-icon { color: #dc8768; }
+.activity-filters button.active .filter-icon { color: #d9fb62; }
+.activity-filters [data-kind="deposit"].active .filter-icon { color: #88e7c2; }
+.activity-filters [data-kind="withdraw"].active .filter-icon { color: #ffb99b; }
+.activity-filters .filter-icon .ui-icon { width: 16px; height: 16px; }
+.activity-filters .filter-count {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border: 1px solid #dbe3f1;
+  border-radius: 7px;
+  background: #ffffffb3;
+  color: #7e8ba5;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.activity-filters button.active .filter-count {
+  border-color: #d9fb62;
+  background: #d9fb62;
+  color: #243326;
+}
+.activity-filters [data-kind="deposit"].active .filter-count { background: #a2eccd; border-color: #a2eccd; color: #20594a; }
+.activity-filters [data-kind="withdraw"].active .filter-count { background: #ffd0bb; border-color: #ffd0bb; color: #6f3d2c; }
+.activity-filters button:focus-visible { z-index: 1; outline: 3px solid #718cf0; outline-offset: 2px; }
+.activity-result-summary { flex: 1 0 100%; margin: 0; padding-left: 2px; font-size: 11px; color: #8b97ad; }
+@media (max-width: 650px) {
+  .table-toolbar .activity-filters { width: 100%; margin-left: 0; }
+  .activity-filters button { gap: 5px; padding-inline: 4px; font-size: 11px; }
+  .activity-filters .filter-count { min-width: 19px; height: 20px; padding-inline: 3px; font-size: 9px; }
+  .activity-filters .filter-icon .ui-icon { width: 14px; height: 14px; }
+}
+@media (max-width: 480px) {
+  .activity-filters button { flex-wrap: wrap; gap: 4px; min-height: 58px; }
+  .activity-filters .filter-icon { flex-basis: 100%; justify-content: center; }
+}
+@media (max-width: 360px) {
+  .activity-filters .filter-count { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-filters .filter-indicator, .activity-filters button { transition: none; }
+}
