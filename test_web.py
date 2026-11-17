@@ -72,7 +72,7 @@ class WalletWebTests(unittest.TestCase):
 
     def test_static_assets_and_request_boundaries(self):
         self.assertIn('Five possibilities', self.request('/')[2])
-        for path in ['/app.js', '/ui.js', '/ui.css', '/theme.css', '/vendor/anime.umd.min.js']:
+        for path in ['/app.js', '/ui.js', '/ui.css', '/theme.css', '/workspace.css', '/vendor/anime.umd.min.js']:
             status, headers, body = self.request(path)
             self.assertEqual(status, 200)
             self.assertGreater(len(body), 100)
@@ -80,6 +80,14 @@ class WalletWebTests(unittest.TestCase):
         self.assertEqual(self.request('/api/transaction', {}, origin=False)[0], 403)
         self.assertEqual(self.request(host='untrusted.example')[0], 403)
         self.assertEqual(self.request('/../wallet.py')[0], 404)
+
+    def test_market_route_is_validated_and_offline_history_is_explicit(self):
+        status, _, result=self.request('/api/market?base=USD&quote=GHS&days=7')
+        self.assertEqual(status,200)
+        self.assertEqual(result['points'],[])
+        self.assertTrue(result['error'])
+        self.assertEqual(self.request('/api/market?base=BAD&quote=GHS&days=30')[0],400)
+        self.assertEqual(self.request('/api/market?base=USD&quote=GHS&days=999')[0],400)
 
 
 if __name__ == '__main__':

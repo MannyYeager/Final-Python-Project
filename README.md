@@ -1,102 +1,55 @@
-# E-Wallet Converter
+# Cedi — a multi-currency wallet lab
 
-A Python e-wallet simulation with a working web dashboard and the original terminal interface. Deposit or withdraw in five currencies, inspect equivalent balances, and follow each transaction in a session activity list. The web interface uses the existing `Wallet` class and its decimal arithmetic.
+A local Python wallet application with separate **Overview**, **Move money**, **Activity**, **Rates & insights** and **Payment methods** sections. Funds and payment methods are simulated. Currency reference rates and historical observations come from the real Frankfurter API.
 
-**This is a simulation.** The rates are fixed teaching examples, not current exchange rates. No money moves, no financial account is created, and the balance disappears when the program exits.
+## Run
 
-## Open the web app
-
-Requires **Python 3.11 or newer** and only the standard library.
+Requires Python 3.10+. No third-party Python packages, API keys or frontend build are needed.
 
 ```sh
-git clone https://github.com/MannyYeager/Final-Python-Project.git
-cd Final-Python-Project
 python web.py
 ```
 
-Open **http://127.0.0.1:8766/**. Use `--port 8771` if that port is occupied. No frontend build, packages, or API keys are needed.
+Open http://127.0.0.1:8766/ . Use `--port 8771` for another loopback port. For disconnected development, run `python web.py --offline`; example rates are visibly labelled and no historical graph is invented.
 
-Try **10 USD** as a deposit: the balance becomes **GHS 114.80**. Switch to **Withdraw**, choose **GHS**, and enter **25**: the balance becomes **GHS 89.80**. An oversized withdrawal shows an error without changing the balance or activity list. The full-withdrawal option pays out the selected currency's rounded equivalent and clears the simulated balance.
+## Explore
 
-Each browser cookie session has an independent wallet and activity list. Refreshes retain that session; it expires after eight hours, and all data is discarded when the server stops. The interface calls the Python backend for every transaction. The on-screen pre-submit quote is approximate; the server's Decimal result determines the balance. The server binds only to `127.0.0.1`.
+- Change the balance-display currency between GHS, USD, GBP, EUR and West African CFA franc (XOF). The wallet holds a single GHS balance; changing the view does not exchange funds.
+- Add money from a demo card, bank account or mobile-money wallet. Choose a currency, amount, saved method and optional note, then review the GHS amount, rate, source, date, zero simulation fee and resulting balance.
+- Withdraw a chosen amount or the entire balance to a saved destination. The review quote lasts two minutes, retains its conversion rate and prevents duplicate submissions. A changed balance requires a new review.
+- Save up to eight demo methods using a label and four example ending digits. No full card/account numbers or CVVs are requested. No payment processor is connected.
+- Open transaction receipts, search/filter activity, export CSV, and set a personal GHS savings target.
+- Explore selectable currency pairs over 7, 30 or 90 days. The chart has an observation readout and an accessible data table. Blank dates are not interpolated into fabricated observations.
 
-## Run the original terminal app
+## Reference-rate integration
 
-Requires **Python 3.11 or newer** and only the standard library.
+[Frankfurter v2](https://frankfurter.dev/) provides latest and historical blended reference rates without a key. Reference rates are published daily or a few times per day; they are not streaming trading quotes. The server requests only currency codes and date ranges, never wallet data or method labels.
+
+`exchange.py` inverts GHS-base quotes into GHS per unit for shared Decimal conversion. Latest rates cache for 15 minutes; historical series cache for one hour. Network calls have bounded timeouts/retries and response-size limits. If latest retrieval fails, the last retrieved reference rates are labelled cached/stale; without a previous observation, clearly labelled teaching rates are used. Failed history requests show an error and retry control, never a fake graph.
+
+Transactions retain their quoted rate and method snapshot, so later rate changes do not rewrite receipts. GHS is the base currency and needs no conversion. API currency aliases preserve the original `EURO` and `CFA` internals while presenting EUR and XOF.
+
+## Original terminal application
 
 ```sh
-git clone https://github.com/MannyYeager/Final-Python-Project.git
-cd Final-Python-Project
 python app.py
 ```
 
-On Windows, `py app.py` also works. On macOS/Linux, use `python3 app.py` if needed.
-
-The menu offers deposits, partial withdrawals, full withdrawals, and a balance view in every supported currency. Invalid numbers, nonfinite values, unsupported currencies, and insufficient funds leave the balance unchanged. EOF or Ctrl+C exits cleanly.
-
-## Example session
-
-| Step | Menu selection | Input | GHS balance |
-| --- | --- | --- | ---: |
-| Deposit cedis | `1` | `100` | 100.00 |
-| Withdraw cedis | `6`, then `2` | `25` | 75.00 |
-| Deposit US dollars | `2` | `10` | 189.80 |
-| View all currencies | `11` | — | 189.80 |
-| Exit | `12` | — | Session ends |
-
-Press Enter after each result to return to the menu. Partial GHS withdrawals now use the same conversion rules as the other currencies.
-
-You can also use the class directly:
-
-```python
-from wallet import Wallet
-
-wallet = Wallet("Ama")
-print(wallet.deposit("100", "GHS"))
-print(wallet.withdrawal("25", "GHS"))
-# Available balance: GHS 75.00
-print(wallet.check_balance())
-```
-
-## Fixed example rates
-
-These constants live in `rates.py` and represent **GHS per one foreign currency unit**. They have no claim to a current market date.
-
-| Currency | Example GHS value |
-| --- | ---: |
-| GHS | 1.00 |
-| USD | 11.48 |
-| GBP | 15.57 |
-| EURO | 13.45 |
-| CFA | 0.021 |
-
-The class also accepts `GH₵` as GHS and `EUR` as EURO. Currency codes are case-insensitive.
-
-Balances use `Decimal`. Each converted transaction is rounded to two GHS decimal places using half-up rounding; converted values that round to zero are rejected. Amounts must be positive, finite, and no greater than 1,000,000,000 per transaction. A full withdrawal shows the selected currency rounded to two places and clears the entire simulated GHS balance, including conversion rounding differences. If that payout would round to zero, the balance is preserved.
+The terminal interface retains its fixed teaching rates from `rates.py`. The shared `Wallet` class accepts an optional per-instance rate table; its default still uses the original examples. Decimal validation/rounding and invalid-withdrawal protection apply to both interfaces.
 
 ## Verify
 
 ```sh
 python -m unittest -v
+node --check static/app.js
+node --check static/ui.js
+node test_motion.cjs
 ```
 
-Regression tests cover all five currencies, partial GHS withdrawals, invalid-currency full withdrawals, insufficient funds, nonnumeric/NaN/infinite input, rounding, recovery after invalid terminal input, HTTP transactions, per-browser isolation, activity records, and request boundaries.
+Tests use deterministic injected/offline rates; they never depend on an external API being available. Coverage includes Decimal operations, invalid inputs, session isolation, method validation, quote expiry/idempotency, changed balances, rate inversion/caching, explicit outage behavior, history validation, CSV and local request/file boundaries.
 
-| File | Responsibility |
-| --- | --- |
-| `app.py` | Terminal menus and input |
-| `wallet.py` | Balance and transaction rules |
-| `rates.py` | Fixed teaching rates |
-| `test_wallet.py` | Unit tests and a terminal walkthrough |
-| `web.py`, `local_web.py` | Session wallet API and loopback HTTP server |
-| `static/` | HTML/CSS/JavaScript dashboard, forms, and activity view |
-| `test_web.py` | HTTP regression tests |
+## Runtime and limits
 
-This project has no durable storage, fees, live-rate API, or payment-service integration. The web activity list is an educational session history, not an audited financial ledger. Stop the web server with Ctrl+C.
+The standard-library server binds only to loopback, restricts Host/Origin, uses HttpOnly same-site session cookies and serves an explicit asset whitelist under a self-only script policy. Each browser has an isolated in-memory wallet. Sessions expire after eight hours and all session data resets when the server stops. This is a portfolio simulation, not a bank or payment service.
 
-### Visual design and animation
-
-The browser app includes a distinct colour palette, custom stroke SVG icons, richer dashboards, and Anime.js entrances and action feedback. Animation respects `prefers-reduced-motion`, including changes while the page is open. Forms and data updates do not depend on animation completing.
-
-Anime.js **4.5.0** is vendored at `static/vendor/anime.umd.min.js` from the official npm distribution, with its MIT license in `static/vendor/ANIME-LICENSE.md`. No CDN, build step, or internet connection is needed at runtime. `static/ui.js` and `static/ui.css` provide the shared icon and motion layer; `static/theme.css` contains this app’s visual theme. See [Anime.js installation](https://animejs.com/documentation/getting-started/installation/).
-`node test_motion.cjs` checks the motion preference and missing-runtime fallbacks (Node.js is needed only for this optional check).
+Anime.js 4.5.0 and its MIT license are vendored in `static/vendor/`. Custom SVG icons, animated entrances and feedback work offline and respect reduced-motion preferences. `static/workspace.css` contains the expanded workspace layouts. No public deployment is required.

@@ -30,17 +30,18 @@ def money(value):
 
 
 class Wallet:
-    def __init__(self, user):
+    def __init__(self, user, rates=None):
         self.user = user
         self.balance = Decimal("0.00")
+        self.rates = dict(RATES if rates is None else rates)
 
     def _converted_amount(self, amount, currency):
         code = currency_code(currency)
-        if code not in RATES:
+        if code not in self.rates:
             raise ValueError("Invalid Currency")
         with localcontext() as context:
             context.prec = 28
-            value = money(positive_amount(amount) * RATES[code])
+            value = money(positive_amount(amount) * self.rates[code])
         if value <= 0:
             raise ValueError("Amount is too small: its GHS value rounds to 0.00.")
         return code, value
@@ -71,11 +72,11 @@ class Wallet:
 
     def withdraw_all(self, currency):
         code = currency_code(currency)
-        if code not in RATES:
+        if code not in self.rates:
             return "Invalid Currency"
         if self.balance <= 0:
             return "No balance available to withdraw."
-        amount = money(self.balance / RATES[code])
+        amount = money(self.balance / self.rates[code])
         if amount <= 0:
             return "Balance is too small to withdraw in this currency."
         self.balance = Decimal("0.00")
@@ -86,6 +87,6 @@ class Wallet:
 
     def check_balance(self):
         lines = ["--- Simulated Account Balance ---"]
-        for code, rate in RATES.items():
+        for code, rate in self.rates.items():
             lines.append(f"{code} balance: {money(self.balance / rate):.2f}")
         return "\n".join(lines)

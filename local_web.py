@@ -6,7 +6,7 @@ import time
 from http.cookies import CookieError, SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 
 
 class LocalServer(ThreadingHTTPServer):
@@ -73,12 +73,15 @@ class Handler(BaseHTTPRequestHandler):
                 return
             path = urlsplit(self.path).path
             try:
-                if path in {"/", "/app.js", "/style.css", "/ui.js", "/ui.css", "/theme.css", "/vendor/anime.umd.min.js"}:
+                if path in {"/", "/app.js", "/style.css", "/ui.js", "/ui.css", "/theme.css", "/workspace.css", "/vendor/anime.umd.min.js"}:
                     name, mime = {"/": ("index.html", "text/html"), "/app.js": ("app.js", "text/javascript"),
                                   "/style.css": ("style.css", "text/css"), "/ui.js": ("ui.js", "text/javascript"),
-                                  "/ui.css": ("ui.css", "text/css"), "/theme.css": ("theme.css", "text/css"),
+                                  "/ui.css": ("ui.css", "text/css"), "/theme.css": ("theme.css", "text/css"), "/workspace.css": ("workspace.css", "text/css"),
                                   "/vendor/anime.umd.min.js": ("vendor/anime.umd.min.js", "text/javascript")}[path]
                     self.reply(200, (self.server.static_dir / name).read_bytes(), mime + "; charset=utf-8")
+                elif path in getattr(self.server, 'read_paths', set()):
+                    data, cookie = self.session()
+                    self.reply(200, self.server.read(path, parse_qs(urlsplit(self.path).query), data), cookie=cookie)
                 elif path in {"/api/state", "/api/export"}:
                     data, cookie = self.session()
                     if path == "/api/export" and hasattr(self.server, "export"):
